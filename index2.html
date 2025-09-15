@@ -51,10 +51,9 @@
   <img id="controller" src="trim.8B6A88C9-6E86-42F9-965C-3B316617C869.GIF" alt="controller" />
 
   <script>
-    const numEyes = 100; // more eyes
+    const numEyes = 100;
     const eyes = [];
 
-    // Create cloud-like cluster near center
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
 
@@ -63,12 +62,10 @@
       img.src = "eyes.png";
       img.className = "eye";
 
-      // Random smaller sizes
-      let size = 15 + Math.random() * 45; // 15–200px
+      let size = 15 + Math.random() * 45;
       img.style.width = size + "px";
 
-      // Place eyes in a looser cloud around center
-      const offsetX = (Math.random() - 0.5) * 300; // larger spread
+      const offsetX = (Math.random() - 0.5) * 300;
       const offsetY = (Math.random() - 0.5) * 220;
       const startX = centerX + offsetX;
       const startY = centerY + offsetY;
@@ -89,154 +86,62 @@
     }
 
     const controller = document.getElementById("controller");
-<script>
-  const numEyes = 100;
-  const eyes = [];
+    let pointerX = window.innerWidth / 2;
+    let pointerY = window.innerHeight / 2;
 
-  const centerX = window.innerWidth / 2;
-  const centerY = window.innerHeight / 2;
-
-  for (let i = 0; i < numEyes; i++) {
-    const img = document.createElement("img");
-    img.src = "eyes.png";
-    img.className = "eye";
-
-    let size = 15 + Math.random() * 45;
-    img.style.width = size + "px";
-
-    const offsetX = (Math.random() - 0.5) * 300;
-    const offsetY = (Math.random() - 0.5) * 220;
-    const startX = centerX + offsetX;
-    const startY = centerY + offsetY;
-
-    img.style.left = startX + "px";
-    img.style.top = startY + "px";
-    document.body.appendChild(img);
-
-    eyes.push({
-      el: img,
-      x: startX,
-      y: startY,
-      vx: (Math.random() - 0.5) * 0.2,
-      vy: (Math.random() - 0.5) * 0.2,
-      size,
-      free: false
-    });
-  }
-
-  const controller = document.getElementById("controller");
-  let pointerX = window.innerWidth / 2;
-  let pointerY = window.innerHeight / 2;
-
-  function updatePointer(x, y) {
-    pointerX = x;
-    pointerY = y;
-    controller.style.left = pointerX + "px";
-    controller.style.top = pointerY + "px";
-  }
-
-  // Mouse move
-  document.addEventListener("mousemove", (e) => {
-    updatePointer(e.clientX, e.clientY);
-  });
-
-  // Touch move for smartphones
-  document.addEventListener("touchmove", (e) => {
-    if (e.touches.length > 0) {
-      updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+    function updatePointer(x, y) {
+      pointerX = x;
+      pointerY = y;
+      controller.style.left = pointerX + "px";
+      controller.style.top = pointerY + "px";
     }
-  }, { passive: true });
 
-  function update() {
-    eyes.forEach((eye) => {
-      const dx = eye.x - pointerX;
-      const dy = eye.y - pointerY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (dist < 100) {
-        eye.free = true;
-        const angle = Math.atan2(dy, dx);
-        const force = (100 - dist) * 0.08;
-        eye.vx += Math.cos(angle) * force;
-        eye.vy += Math.sin(angle) * force;
-        eye.el.classList.add("distort");
-      }
-
-      if (eye.free) {
-        eye.vy += 0.01;
-        eye.vx += (Math.random() - 0.5) * 0.01;
-      } else {
-        eye.vx += (Math.random() - 0.5) * 0.005;
-        eye.vy += (Math.random() - 0.5) * 0.005;
-      }
-
-      eye.x += eye.vx;
-      eye.y += eye.vy;
-
-      if (eye.x <= 0) { eye.x = 0; eye.vx *= -0.5; }
-      if (eye.y <= 0) { eye.y = 0; eye.vy *= -0.5; }
-      if (eye.x + eye.size >= window.innerWidth) { eye.x = window.innerWidth - eye.size; eye.vx *= -0.5; }
-      if (eye.y + eye.size >= window.innerHeight) { eye.y = window.innerHeight - eye.size; eye.vy *= -0.5; }
-
-      eye.vx *= 0.99;
-      eye.vy *= 0.99;
-
-      eye.el.style.left = eye.x + "px";
-      eye.el.style.top = eye.y + "px";
-
-      eye.el.addEventListener("animationend", () => {
-        eye.el.classList.remove("distort");
-      });
+    // Mouse move
+    document.addEventListener("mousemove", (e) => {
+      updatePointer(e.clientX, e.clientY);
     });
 
-    requestAnimationFrame(update);
-  }
+    // Touch move for smartphones
+    document.addEventListener("touchmove", (e) => {
+      if (e.touches.length > 0) {
+        updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: true });
 
-  update();
-</script>
-
-    // Physics loop
     function update() {
       eyes.forEach((eye) => {
-        const dx = eye.x - mouseX;
-        const dy = eye.y - mouseY;
+        const dx = eye.x - pointerX;
+        const dy = eye.y - pointerY;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist < 100) {
-          // Mark eye as free-floating
           eye.free = true;
           const angle = Math.atan2(dy, dx);
-          const force = (100 - dist) * 0.08; // lighter push
+          const force = (100 - dist) * 0.08;
           eye.vx += Math.cos(angle) * force;
           eye.vy += Math.sin(angle) * force;
           eye.el.classList.add("distort");
         }
 
         if (eye.free) {
-          // Gentle downward float + random horizontal drift
           eye.vy += 0.01;
           eye.vx += (Math.random() - 0.5) * 0.01;
         } else {
-          // Idle floating cloud effect (varied directions)
           eye.vx += (Math.random() - 0.5) * 0.005;
           eye.vy += (Math.random() - 0.5) * 0.005;
         }
 
-        // Apply velocity
         eye.x += eye.vx;
         eye.y += eye.vy;
 
-        // Bounce off edges gently
         if (eye.x <= 0) { eye.x = 0; eye.vx *= -0.5; }
         if (eye.y <= 0) { eye.y = 0; eye.vy *= -0.5; }
         if (eye.x + eye.size >= window.innerWidth) { eye.x = window.innerWidth - eye.size; eye.vx *= -0.5; }
         if (eye.y + eye.size >= window.innerHeight) { eye.y = window.innerHeight - eye.size; eye.vy *= -0.5; }
 
-        // Light friction for floaty effect
         eye.vx *= 0.99;
         eye.vy *= 0.99;
 
-        // Update DOM
         eye.el.style.left = eye.x + "px";
         eye.el.style.top = eye.y + "px";
 
@@ -247,6 +152,7 @@
 
       requestAnimationFrame(update);
     }
+
     update();
   </script>
 </body>
