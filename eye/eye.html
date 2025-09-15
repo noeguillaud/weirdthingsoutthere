@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eye Follows Pointer</title>
+    <style>
+        body {
+            background-color: black;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #eye-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        #white-eye {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: url(/Users/guillaud_noe/Desktop/eye/eye.png);
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        #red-pupil {
+            position: absolute;
+            width: 65px;
+            height: 65px;
+            background-image: url("red.png"); /* replace with your pupil file path */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="eye-container">
+        <div id="white-eye"></div>
+        <div id="red-pupil"></div>
+    </div>
+
+<script>
+    const eyeContainer = document.getElementById('eye-container');
+    const redPupil = document.getElementById('red-pupil');
+
+    const offsetX = 0;   // manual adjustment left/right
+    const offsetY = 10;  // manual adjustment up/down
+
+    function centerPupil() {
+        redPupil.style.left = '50%';
+        redPupil.style.top = '50%';
+        redPupil.style.transform = 'translate(-50%, -50%)';
+    }
+
+    // set pupil centered when page loads
+    centerPupil();
+
+    document.addEventListener('mousemove', (e) => {
+        const containerRect = eyeContainer.getBoundingClientRect();
+        const centerX = containerRect.left + containerRect.width / 2 + offsetX;
+        const centerY = containerRect.top + containerRect.height / 2 + offsetY;
+
+        const dx = e.clientX - centerX;
+        const dy = e.clientY - centerY;
+
+        const angle = Math.atan2(dy, dx);
+
+        const irisRadius = containerRect.width / 7; // radius of movement
+        const maxDistance = irisRadius - redPupil.offsetWidth / 2;
+
+        const distance = Math.min(Math.hypot(dx, dy), maxDistance);
+
+        const pupilX = centerX + Math.cos(angle) * distance;
+        const pupilY = centerY + Math.sin(angle) * distance;
+
+        redPupil.style.left = (pupilX - containerRect.left - redPupil.offsetWidth / 2) + 'px';
+        redPupil.style.top = (pupilY - containerRect.top - redPupil.offsetHeight / 2) + 'px';
+        redPupil.style.transform = ''; // remove translate after movement
+    });
+
+    // reset to center when leaving the page
+    document.addEventListener('mouseleave', centerPupil);
+</script>
+</body>
+</html>
