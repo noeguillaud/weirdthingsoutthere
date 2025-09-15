@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eyes Portfolio</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+      cursor: none; /* Hide mouse pointer */
+    }
+
+    .eye {
+      position: absolute;
+      pointer-events: none;
+      transition: transform 0.2s;
+      animation: float 10s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .distort {
+      animation: distort 0.5s ease;
+    }
+
+    @keyframes distort {
+      0% { transform: scale(1.05, 0.95) rotate(1deg); }
+      50% { transform: scale(0.95, 1.05) rotate(-1deg); }
+      100% { transform: scale(1, 1) rotate(0); }
+    }
+
+    #controller {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+<body>
+  <!-- Controller -->
+  <img id="controller" src="trim.8B6A88C9-6E86-42F9-965C-3B316617C869.GIF" alt="controller" />
+
+  <script>
+    const numEyes = 100; // more eyes
+    const eyes = [];
+
+    // Create cloud-like cluster near center
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+
+    for (let i = 0; i < numEyes; i++) {
+      const img = document.createElement("img");
+      img.src = "eyes.png";
+      img.className = "eye";
+
+      // Random smaller sizes
+      let size = 15 + Math.random() * 45; // 15–200px
+      img.style.width = size + "px";
+
+      // Place eyes in a looser cloud around center
+      const offsetX = (Math.random() - 0.5) * 300; // larger spread
+      const offsetY = (Math.random() - 0.5) * 220;
+      const startX = centerX + offsetX;
+      const startY = centerY + offsetY;
+
+      img.style.left = startX + "px";
+      img.style.top = startY + "px";
+      document.body.appendChild(img);
+
+      eyes.push({
+        el: img,
+        x: startX,
+        y: startY,
+        vx: (Math.random() - 0.5) * 0.2,
+        vy: (Math.random() - 0.5) * 0.2,
+        size,
+        free: false
+      });
+    }
+
+    const controller = document.getElementById("controller");
+    let mouseX = 0, mouseY = 0;
+
+    // Move controller with mouse
+    document.addEventListener("mousemove", (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      controller.style.left = mouseX + "px";
+      controller.style.top = mouseY + "px";
+    });
+
+    // Physics loop
+    function update() {
+      eyes.forEach((eye) => {
+        const dx = eye.x - mouseX;
+        const dy = eye.y - mouseY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 100) {
+          // Mark eye as free-floating
+          eye.free = true;
+          const angle = Math.atan2(dy, dx);
+          const force = (100 - dist) * 0.08; // lighter push
+          eye.vx += Math.cos(angle) * force;
+          eye.vy += Math.sin(angle) * force;
+          eye.el.classList.add("distort");
+        }
+
+        if (eye.free) {
+          // Gentle downward float + random horizontal drift
+          eye.vy += 0.01;
+          eye.vx += (Math.random() - 0.5) * 0.01;
+        } else {
+          // Idle floating cloud effect (varied directions)
+          eye.vx += (Math.random() - 0.5) * 0.005;
+          eye.vy += (Math.random() - 0.5) * 0.005;
+        }
+
+        // Apply velocity
+        eye.x += eye.vx;
+        eye.y += eye.vy;
+
+        // Bounce off edges gently
+        if (eye.x <= 0) { eye.x = 0; eye.vx *= -0.5; }
+        if (eye.y <= 0) { eye.y = 0; eye.vy *= -0.5; }
+        if (eye.x + eye.size >= window.innerWidth) { eye.x = window.innerWidth - eye.size; eye.vx *= -0.5; }
+        if (eye.y + eye.size >= window.innerHeight) { eye.y = window.innerHeight - eye.size; eye.vy *= -0.5; }
+
+        // Light friction for floaty effect
+        eye.vx *= 0.99;
+        eye.vy *= 0.99;
+
+        // Update DOM
+        eye.el.style.left = eye.x + "px";
+        eye.el.style.top = eye.y + "px";
+
+        eye.el.addEventListener("animationend", () => {
+          eye.el.classList.remove("distort");
+        });
+      });
+
+      requestAnimationFrame(update);
+    }
+    update();
+  </script>
+</body>
+</html>
